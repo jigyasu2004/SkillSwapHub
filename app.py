@@ -19,7 +19,7 @@ app.secret_key = os.environ.get("SESSION_SECRET", "skill-swap-secret-key-2025")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "postgresql://neondb_owner:npg_NZGK9pxO5sHL@ep-sparkling-surf-a8empueu-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,

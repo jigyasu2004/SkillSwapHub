@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Send Swap Request - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-handshake me-2"></i>Send Swap Request to {{ receiver.name or receiver.username }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- Receiver Info -->
+                <div class="row mb-4">
+                    <div class="col-md-3 text-center">
+                        {% if receiver.profile_photo %}
+                            <img src="{{ receiver.profile_photo }}" alt="{{ receiver.name or receiver.username }}" 
+                                 class="rounded-circle mb-2" width="80" height="80">
+                        {% else %}
+                            <div class="avatar-placeholder rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <h5>{{ receiver.name or receiver.username }}</h5>
+                        {% if receiver.location %}
+                            <p class="text-muted small"><i class="fas fa-map-marker-alt me-1"></i>{{ receiver.location }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success">Skills They Offer:</h6>
+                                {% if receiver_offered_skills %}
+                                    {% for skill in receiver_offered_skills %}
+                                        <span class="badge bg-success-subtle text-success me-1 mb-1">{{ skill.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">No skills offered</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">Your Skills:</h6>
+                                {% if user_offered_skills %}
+                                    {% for skill in user_offered_skills %}
+                                        <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ skill.name }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">You haven't added any skills yet. <a href="{{ url_for('edit_profile') }}">Add skills to your profile</a></p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Form -->
+                {% if user_offered_skills and receiver_offered_skills %}
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="offered_skill_id" class="form-label">
+                                        <i class="fas fa-gift me-1 text-success"></i>Choose one of your skills to offer
+                                    </label>
+                                    <select class="form-select" id="offered_skill_id" name="offered_skill_id" required>
+                                        <option value="">Select a skill you offer</option>
+                                        {% for skill in user_offered_skills %}
+                                            <option value="{{ skill.id }}">{{ skill.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="wanted_skill_id" class="form-label">
+                                        <i class="fas fa-heart me-1 text-primary"></i>Choose one of their skills you want
+                                    </label>
+                                    <select class="form-select" id="wanted_skill_id" name="wanted_skill_id" required>
+                                        <option value="">Select a skill you want</option>
+                                        {% for skill in receiver_offered_skills %}
+                                            <option value="{{ skill.id }}">{{ skill.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Message (Optional)</label>
+                            <textarea class="form-control" id="message" name="message" rows="4" 
+                                      placeholder="Introduce yourself and explain what you'd like to learn or offer..."></textarea>
+                            <div class="form-text">A friendly message can increase your chances of acceptance!</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('user_detail', user_id=receiver.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Back to Profile
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>Send Request
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Cannot Send Request</h5>
+                        {% if not user_offered_skills %}
+                            <p class="mb-2">You need to add skills to your profile before sending swap requests.</p>
+                            <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Add Skills to Profile
+                            </a>
+                        {% elif not receiver_offered_skills %}
+                            <p class="mb-0">This user hasn't added any skills to offer yet.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

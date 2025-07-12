@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Rate User - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-star me-2"></i>Rate Your Swap Experience</h4>
+            </div>
+            <div class="card-body">
+                <!-- Swap Details -->
+                <div class="mb-4">
+                    <h5>Swap Details</h5>
+                    <div class="border p-3 rounded bg-light">
+                        <div class="d-flex align-items-center justify-content-center mb-2">
+                            <span class="badge bg-success me-2">{{ swap_request.offered_skill.name }}</span>
+                            <i class="fas fa-exchange-alt text-muted mx-2"></i>
+                            <span class="badge bg-primary">{{ swap_request.wanted_skill.name }}</span>
+                        </div>
+                        <p class="text-center mb-0">
+                            <strong>{{ other_user.name or other_user.username }}</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Rating Form -->
+                <form method="POST">
+                    <div class="mb-4">
+                        <label class="form-label">How would you rate this experience?</label>
+                        <div class="d-flex justify-content-center mb-3">
+                            <div class="star-rating">
+                                {% for i in range(1, 6) %}
+                                    <span class="star cursor-pointer" data-rating="{{ i }}">
+                                        <i class="far fa-star fa-2x"></i>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <input type="hidden" name="rating" id="rating" required>
+                        <div class="text-center">
+                            <small class="text-muted">Click on the stars to rate</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="feedback" class="form-label">Feedback (Optional)</label>
+                        <textarea class="form-control" id="feedback" name="feedback" rows="4" 
+                                  placeholder="Share your experience with this skill swap..."></textarea>
+                        <div class="form-text">Your feedback helps others make informed decisions</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('swap_requests') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Requests
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                            <i class="fas fa-star me-1"></i>Submit Rating
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('rating');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    stars.forEach((star, index) => {
+        star.addEventListener('click', function() {
+            const rating = index + 1;
+            ratingInput.value = rating;
+            updateStars(rating);
+            submitBtn.disabled = false;
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            const hoverRating = index + 1;
+            updateStars(hoverRating, true);
+        });
+    });
+    
+    document.querySelector('.star-rating').addEventListener('mouseleave', function() {
+        const currentRating = parseInt(ratingInput.value) || 0;
+        updateStars(currentRating);
+    });
+    
+    function updateStars(rating, isHover = false) {
+        stars.forEach((star, index) => {
+            const icon = star.querySelector('i');
+            if (index < rating) {
+                icon.className = 'fas fa-star fa-2x';
+                star.style.color = isHover ? '#ffca2c' : '#ffc107';
+            } else {
+                icon.className = 'far fa-star fa-2x';
+                star.style.color = '#dee2e6';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
