@@ -101,24 +101,33 @@ Preferred communication style: Simple, everyday language.
 - **SQLAlchemy**: Database ORM
 - **Werkzeug**: Password hashing and utilities
 - **psycopg2**: PostgreSQL database adapter
+- **python-dotenv**: Environment variable management
+- **gunicorn**: WSGI server for production
 
 ### Database Service
-- **Neon Database**: Managed PostgreSQL service
+- **PostgreSQL**: Database system (local or cloud)
 - **SSL connection**: Secure database connectivity
 - **Connection pooling**: Performance optimization
 
 ## Deployment Strategy
 
 ### Development Environment
-- **Local Development**: Flask development server
+- **Local Development**: Flask development server with python-dotenv
 - **Hot Reload**: Debug mode enabled
-- **Environment Variables**: Configuration management
+- **Environment Variables**: .env file configuration management
+- **Virtual Environment**: Isolated Python dependencies
+
+### Local Setup Files
+- **.env.example**: Template for environment variables
+- **local_requirements.txt**: Python dependencies for local development
+- **LOCAL_SETUP.md**: Complete setup guide for Windows/local development
 
 ### Database Configuration
-- **Connection String**: Environment-based configuration
-- **SSL Mode**: Required for secure connections
+- **Connection String**: Environment-based configuration via .env file
+- **SSL Mode**: Required for secure connections (cloud databases)
 - **Pool Settings**: Optimized for performance
 - **Automatic Migration**: Table creation on startup
+- **Multiple Database Support**: Local PostgreSQL or cloud providers (Neon, Supabase)
 
 ### Static Assets
 - **CSS/JS Files**: Served via Flask static file handling
