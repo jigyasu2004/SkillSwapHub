@@ -1,5 +1,9 @@
 # Skill Swap Platform
 
+## Problem Statement - Skill Swap Platform
+## Email - 22cs3031@rgipt.ac.in
+## video link - https://drive.google.com/drive/folders/1AI649K_Q75WHRPDu-hTZmR3HeaIGgosT?usp=sharing
+
 ## Overview
 
 The Skill Swap Platform is a web-based application that enables users to exchange skills with one another. Built with Flask and SQLAlchemy, it provides a comprehensive platform for users to list their offered skills, specify wanted skills, and arrange skill exchanges with other platform members.
