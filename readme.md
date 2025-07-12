@@ -22,8 +22,8 @@ This guide will help you set up and run the Skill Swap Platform on your local Wi
 
 Clone or download the project files to your computer:
 ```bash
-git clone <repository-url>
-cd skill-swap-platform
+git clone https://github.com/jigyasu2004/SkillSwapHub.git
+cd SkillSwapHub
 ```
 
 #### 2. Create Virtual Environment
