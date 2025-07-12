@@ -1,8 +1,9 @@
-Flask==3.0.0
+Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
-psycopg2-binary==2.9.9
-Werkzeug==3.0.1
-SQLAlchemy==2.0.23
-gunicorn==21.2.0
-python-dotenv==1.0.0
 Flask-Caching==2.1.0
+psycopg2-binary==2.9.9
+Werkzeug==3.0.3
+SQLAlchemy==2.0.25
+gunicorn==21.2.0
+python-dotenv==1.0.1
+redis==5.0.1
