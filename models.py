@@ -16,13 +16,15 @@ class User(db.Model):
     is_banned = db.Column(db.Boolean, default=False, nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
-    # Relationships with optimized lazy loading
+    # Relationships with optimized lazy loading and overlaps resolution
     skills_offered = db.relationship('UserSkill', foreign_keys='UserSkill.user_id', 
                                    primaryjoin='and_(User.id==UserSkill.user_id, UserSkill.skill_type=="offered")',
-                                   backref='offering_user', lazy='select')
+                                   backref='offering_user', lazy='select',
+                                   overlaps="skills_wanted,wanting_user")
     skills_wanted = db.relationship('UserSkill', foreign_keys='UserSkill.user_id',
                                   primaryjoin='and_(User.id==UserSkill.user_id, UserSkill.skill_type=="wanted")',
-                                  backref='wanting_user', lazy='select')
+                                  backref='wanting_user', lazy='select',
+                                  overlaps="skills_offered,offering_user")
     sent_requests = db.relationship('SwapRequest', foreign_keys='SwapRequest.requester_id',
                                   backref='requester', lazy='dynamic')
     received_requests = db.relationship('SwapRequest', foreign_keys='SwapRequest.receiver_id',
@@ -90,11 +92,9 @@ class SwapRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships with eager loading
+    # Relationships with eager loading - removed conflicting backrefs
     offered_skill = db.relationship('Skill', foreign_keys=[offered_skill_id], lazy='joined')
     wanted_skill = db.relationship('Skill', foreign_keys=[wanted_skill_id], lazy='joined')
-    requester = db.relationship('User', foreign_keys=[requester_id], lazy='joined')
-    receiver = db.relationship('User', foreign_keys=[receiver_id], lazy='joined')
     
     # Composite indexes for efficient queries
     __table_args__ = (
@@ -112,10 +112,8 @@ class Rating(db.Model):
     feedback = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     
-    # Relationships
+    # Relationships - removed conflicting backrefs
     swap_request = db.relationship('SwapRequest', backref='ratings', lazy='joined')
-    rater = db.relationship('User', foreign_keys=[rater_id], lazy='joined')
-    rated_user = db.relationship('User', foreign_keys=[rated_id], lazy='joined')
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
