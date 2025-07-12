@@ -145,7 +145,10 @@ def profile():
         return redirect(url_for('login'))
     
     user = get_current_user()
-    return render_template('profile.html', user=user)
+    # Get user's recent ratings sorted by date
+    recent_ratings = Rating.query.filter_by(rated_id=user.id).order_by(Rating.created_at.desc()).limit(5).all()
+    
+    return render_template('profile.html', user=user, recent_ratings=recent_ratings)
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 def edit_profile():
@@ -220,7 +223,10 @@ def user_detail(user_id):
         flash('This user account has been banned.', 'error')
         return redirect(url_for('index'))
     
-    return render_template('user_detail.html', user=user)
+    # Get user's ratings sorted by date
+    ratings = Rating.query.filter_by(rated_id=user.id).order_by(Rating.created_at.desc()).all()
+    
+    return render_template('user_detail.html', user=user, ratings=ratings)
 
 @app.route('/send_request/<int:receiver_id>', methods=['GET', 'POST'])
 def send_request(receiver_id):
@@ -461,7 +467,7 @@ def rate_user(swap_request_id):
             flash('An error occurred while submitting the rating.', 'error')
     
     return render_template('rate_user.html', swap_request=swap_request,
-                         rated_user=rated_user, existing_rating=existing_rating)
+                         other_user=rated_user, existing_rating=existing_rating)
 
 @app.route('/admin')
 def admin_dashboard():

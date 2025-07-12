@@ -111,7 +111,7 @@
                 <h5 class="mb-0"><i class="fas fa-star me-2"></i>Recent Reviews</h5>
             </div>
             <div class="card-body">
-                {% set recent_ratings = user.received_ratings.order_by(user.received_ratings.property.mapper.class_.created_at.desc()).limit(5).all() %}
+                {# recent_ratings is passed from the route #}
                 {% if recent_ratings %}
                     {% for rating in recent_ratings %}
                         <div class="border-bottom pb-3 mb-3">
