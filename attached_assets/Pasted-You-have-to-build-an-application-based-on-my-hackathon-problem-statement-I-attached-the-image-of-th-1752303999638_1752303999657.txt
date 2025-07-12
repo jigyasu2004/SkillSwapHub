@@ -1,0 +1,47 @@
+You have to build an application based on my hackathon problem statement. I attached the image of the application what I type I want.
+evaluation basis-
+● Database design - 35% (if using backend as a service e.g Neon database 15%)
+○ Schema Design (well-structured database schema with proper relationships,
+data types)
+○ Real-time sync (WebSockets, polling etc.)
+● Coding Standards- 40%
+○ Data Validation - Proper validation of user inputs on both frontend and
+backend.
+○ Dynamic Values (avoid hardcoding value)
+○ Code Reusability – Write modular, reusable components or functions
+to avoid repetition and improve maintainability.
+○ Performance - App load fast, minimal network calls (using catch
+meromry, cookies)
+○ Error handling (handles invalid inputs and system errors , fallback
+messages)
+○ Use a linter on your code to ensure coding standards are followed.
+○ Complexity of the code (e.g. nested logic, algorithm use)
+● UI/UX Design - 15%
+○ Responsive
+○ Pagination, breadcrumb
+○ Search, Filter
+○ Color combination proper (font color is proper with the background color)
+
+problem statement -
+Skill Swap Platform
+Overview:
+Develop a Skill Swap Platform — a mini application that enables users to list their skills and
+request others in return
+Features:
+Basic info: Name, location (optional), profile photo (optional)
+List of skills offered
+List of skills wanted
+Availability (e.g., weekends, evenings)
+User can make their profile public or private.
+Users can browse or search others by skill (e.g., “Photoshop” or “Excel”)
+Request & Accept Swaps:
+○ Accept or reject swap offers
+○ Show current and pending swap requests
+Ratings or feedback after a swap
+The user is also able to delete the swap request if it is not accepted.
+Admin Role
+● Reject inappropriate or spammy skill descriptions.
+● Ban users who violate platform policies.
+● Monitor pending, accepted, or cancelled swaps.
+● Send platform-wide messages (e.g., feature updates, downtime alerts).
+● Download reports of user activity, feedback logs, and swap stats.
