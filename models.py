@@ -96,6 +96,20 @@ class Rating(db.Model):
     # Relationships
     swap_request = db.relationship('SwapRequest', backref='ratings')
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    swap_request_id = db.Column(db.Integer, db.ForeignKey('swap_request.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    swap_request = db.relationship('SwapRequest', backref='messages')
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+
 class AdminMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)

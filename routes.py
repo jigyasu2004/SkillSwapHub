@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app, db
-from models import User, Skill, UserSkill, SwapRequest, Rating, AdminMessage
+from models import User, Skill, UserSkill, SwapRequest, Rating, Message, AdminMessage
 from sqlalchemy import or_, and_
 from werkzeug.utils import secure_filename
 import os
@@ -468,6 +468,92 @@ def rate_user(swap_request_id):
     
     return render_template('rate_user.html', swap_request=swap_request,
                          other_user=rated_user, existing_rating=existing_rating)
+
+@app.route('/messages/<int:swap_request_id>')
+def messages(swap_request_id):
+    if not is_logged_in():
+        flash('Please log in to view messages.', 'error')
+        return redirect(url_for('login'))
+    
+    current_user = get_current_user()
+    swap_request = SwapRequest.query.get_or_404(swap_request_id)
+    
+    # Check if user is part of this swap and if it's accepted
+    if current_user.id not in [swap_request.requester_id, swap_request.receiver_id]:
+        flash('You are not authorized to view these messages.', 'error')
+        return redirect(url_for('swap_requests'))
+    
+    if swap_request.status != 'accepted':
+        flash('Messages are only available for accepted swap requests.', 'error')
+        return redirect(url_for('swap_requests'))
+    
+    # Get all messages for this swap request
+    messages = Message.query.filter_by(swap_request_id=swap_request_id).order_by(Message.created_at.asc()).all()
+    
+    # Mark messages as read for current user
+    unread_messages = Message.query.filter_by(
+        swap_request_id=swap_request_id,
+        receiver_id=current_user.id,
+        is_read=False
+    ).all()
+    
+    for msg in unread_messages:
+        msg.is_read = True
+    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+    
+    # Determine the other user
+    other_user_id = swap_request.receiver_id if current_user.id == swap_request.requester_id else swap_request.requester_id
+    other_user = User.query.get(other_user_id)
+    
+    return render_template('messages.html', swap_request=swap_request, messages=messages, other_user=other_user)
+
+@app.route('/send_message/<int:swap_request_id>', methods=['POST'])
+def send_message(swap_request_id):
+    if not is_logged_in():
+        flash('Please log in to send messages.', 'error')
+        return redirect(url_for('login'))
+    
+    current_user = get_current_user()
+    swap_request = SwapRequest.query.get_or_404(swap_request_id)
+    
+    # Check if user is part of this swap and if it's accepted
+    if current_user.id not in [swap_request.requester_id, swap_request.receiver_id]:
+        flash('You are not authorized to send messages for this swap.', 'error')
+        return redirect(url_for('swap_requests'))
+    
+    if swap_request.status != 'accepted':
+        flash('Messages are only available for accepted swap requests.', 'error')
+        return redirect(url_for('swap_requests'))
+    
+    content = request.form.get('content', '').strip()
+    if not content:
+        flash('Please enter a message.', 'error')
+        return redirect(url_for('messages', swap_request_id=swap_request_id))
+    
+    # Determine receiver
+    receiver_id = swap_request.receiver_id if current_user.id == swap_request.requester_id else swap_request.requester_id
+    
+    # Create message
+    message = Message(
+        swap_request_id=swap_request_id,
+        sender_id=current_user.id,
+        receiver_id=receiver_id,
+        content=content
+    )
+    
+    try:
+        db.session.add(message)
+        db.session.commit()
+        flash('Message sent successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while sending the message.', 'error')
+    
+    return redirect(url_for('messages', swap_request_id=swap_request_id))
 
 @app.route('/admin')
 def admin_dashboard():

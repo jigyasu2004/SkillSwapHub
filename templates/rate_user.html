@@ -65,40 +65,73 @@
     </div>
 </div>
 
+<style>
+.star-rating .star {
+    color: #dee2e6;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    margin: 0 2px;
+}
+
+.star-rating .star:hover {
+    color: #ffca2c;
+}
+
+.star-rating .star.active {
+    color: #ffc107;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const stars = document.querySelectorAll('.star');
     const ratingInput = document.getElementById('rating');
     const submitBtn = document.getElementById('submitBtn');
+    let selectedRating = 0;
     
     stars.forEach((star, index) => {
         star.addEventListener('click', function() {
-            const rating = index + 1;
-            ratingInput.value = rating;
-            updateStars(rating);
+            selectedRating = index + 1;
+            ratingInput.value = selectedRating;
+            updateStars(selectedRating);
             submitBtn.disabled = false;
+            console.log('Rating selected:', selectedRating);
         });
         
         star.addEventListener('mouseenter', function() {
             const hoverRating = index + 1;
-            updateStars(hoverRating, true);
+            highlightStars(hoverRating);
         });
     });
     
     document.querySelector('.star-rating').addEventListener('mouseleave', function() {
-        const currentRating = parseInt(ratingInput.value) || 0;
-        updateStars(currentRating);
+        updateStars(selectedRating);
     });
     
-    function updateStars(rating, isHover = false) {
+    function highlightStars(rating) {
         stars.forEach((star, index) => {
             const icon = star.querySelector('i');
             if (index < rating) {
                 icon.className = 'fas fa-star fa-2x';
-                star.style.color = isHover ? '#ffca2c' : '#ffc107';
+                star.style.color = '#ffca2c';
             } else {
                 icon.className = 'far fa-star fa-2x';
                 star.style.color = '#dee2e6';
+            }
+        });
+    }
+    
+    function updateStars(rating) {
+        stars.forEach((star, index) => {
+            const icon = star.querySelector('i');
+            if (index < rating) {
+                icon.className = 'fas fa-star fa-2x';
+                star.style.color = '#ffc107';
+                star.classList.add('active');
+            } else {
+                icon.className = 'far fa-star fa-2x';
+                star.style.color = '#dee2e6';
+                star.classList.remove('active');
             }
         });
     }

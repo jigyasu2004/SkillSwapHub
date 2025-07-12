@@ -117,10 +117,16 @@
                                         </a>
                                     </div>
                                 {% elif request.status == 'accepted' %}
-                                    <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fas fa-star me-1"></i>Rate User
-                                    </a>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('messages', swap_request_id=request.id) }}" 
+                                           class="btn btn-info btn-sm">
+                                            <i class="fas fa-comments me-1"></i>Messages
+                                        </a>
+                                        <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-star me-1"></i>Rate User
+                                        </a>
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>
@@ -242,10 +248,16 @@
                                         <i class="fas fa-trash me-1"></i>Delete
                                     </a>
                                 {% elif request.status == 'accepted' %}
-                                    <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fas fa-star me-1"></i>Rate User
-                                    </a>
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('messages', swap_request_id=request.id) }}" 
+                                           class="btn btn-info btn-sm">
+                                            <i class="fas fa-comments me-1"></i>Messages
+                                        </a>
+                                        <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-star me-1"></i>Rate User
+                                        </a>
+                                    </div>
                                 {% endif %}
                             </div>
                         </div>

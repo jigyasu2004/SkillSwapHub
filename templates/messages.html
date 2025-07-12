@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4><i class="fas fa-comments me-2"></i>Messages with {{ other_user.name or other_user.username }}</h4>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-success me-2">{{ swap_request.offered_skill.name }}</span>
+                        <i class="fas fa-exchange-alt text-muted mx-2"></i>
+                        <span class="badge bg-primary">{{ swap_request.wanted_skill.name }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('swap_requests') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Requests
+                </a>
+            </div>
+            
+            <!-- Messages Display -->
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;" id="messagesContainer">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message-bubble mb-3 {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                            <div class="message-content">
+                                <div class="message-header d-flex justify-content-between align-items-center mb-2">
+                                    <strong>
+                                        {% if message.sender_id == current_user.id %}
+                                            You
+                                        {% else %}
+                                            {{ other_user.name or other_user.username }}
+                                        {% endif %}
+                                    </strong>
+                                    <small class="text-muted">{{ message.created_at.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                                <div class="message-text">{{ message.content }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Message Input -->
+            <div class="card-footer">
+                <form method="POST" action="{{ url_for('send_message', swap_request_id=swap_request.id) }}" id="messageForm">
+                    <div class="input-group">
+                        <textarea class="form-control" name="content" id="messageInput" rows="2" 
+                                  placeholder="Type your message here..." required></textarea>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="mt-3 text-center">
+            {% if swap_request.status == 'accepted' %}
+                <a href="{{ url_for('rate_user', swap_request_id=swap_request.id) }}" class="btn btn-warning">
+                    <i class="fas fa-star me-1"></i>Rate This Exchange
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.message-bubble {
+    max-width: 80%;
+}
+
+.message-bubble.sent {
+    margin-left: auto;
+}
+
+.message-bubble.received {
+    margin-right: auto;
+}
+
+.message-bubble.sent .message-content {
+    background-color: #007bff;
+    color: white;
+    border-radius: 18px 18px 5px 18px;
+    padding: 12px 16px;
+}
+
+.message-bubble.received .message-content {
+    background-color: #f8f9fa;
+    color: #333;
+    border-radius: 18px 18px 18px 5px;
+    padding: 12px 16px;
+    border: 1px solid #dee2e6;
+}
+
+.message-bubble.sent .message-header strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-bubble.sent .message-header small {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#messagesContainer {
+    scroll-behavior: smooth;
+}
+
+#messageInput {
+    resize: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-scroll to bottom of messages
+    const messagesContainer = document.getElementById('messagesContainer');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Handle form submission with Enter key
+    const messageInput = document.getElementById('messageInput');
+    const messageForm = document.getElementById('messageForm');
+    
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (messageInput.value.trim()) {
+                messageForm.submit();
+            }
+        }
+    });
+    
+    // Auto-focus on message input
+    messageInput.focus();
+});
+</script>
+{% endblock %}
