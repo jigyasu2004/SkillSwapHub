@@ -5,6 +5,7 @@ from sqlalchemy import or_, and_
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from functools import lru_cache
 
 # Helper function to check if user is logged in
 def is_logged_in():
@@ -20,6 +21,14 @@ def get_current_user():
 def is_admin():
     user = get_current_user()
     return user and user.is_admin
+
+def get_all_skills():
+    from models import Skill
+    return [skill.name for skill in Skill.query.all()]
+
+@lru_cache(maxsize=1)
+def get_all_skills_cached():
+    return tuple(get_all_skills())
 
 @app.route('/')
 def index():
@@ -180,6 +189,7 @@ def edit_profile():
                     skill = Skill(name=skill_name.strip())
                     db.session.add(skill)
                     db.session.flush()
+                    get_all_skills_cached.cache_clear()  # Invalidate cache when new skill is added
                 
                 user_skill = UserSkill(user_id=user.id, skill_id=skill.id, skill_type='offered')
                 db.session.add(user_skill)
@@ -192,6 +202,7 @@ def edit_profile():
                     skill = Skill(name=skill_name.strip())
                     db.session.add(skill)
                     db.session.flush()
+                    get_all_skills_cached.cache_clear()  # Invalidate cache when new skill is added
                 
                 user_skill = UserSkill(user_id=user.id, skill_id=skill.id, skill_type='wanted')
                 db.session.add(user_skill)
@@ -205,7 +216,7 @@ def edit_profile():
             flash('An error occurred while updating your profile.', 'error')
     
     # Get all skills for autocomplete
-    all_skills = [skill.name for skill in Skill.query.all()]
+    all_skills = list(get_all_skills_cached())
     
     return render_template('edit_profile.html', user=user, all_skills=all_skills)
 
