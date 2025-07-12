@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-cog me-2"></i>Admin Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_users }}</h4>
+                        <p class="mb-0">Total Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_swaps }}</h4>
+                        <p class="mb-0">Total Swaps</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-handshake fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ pending_swaps }}</h4>
+                        <p class="mb-0">Pending Swaps</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ banned_users }}</h4>
+                        <p class="mb-0">Banned Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-ban fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Users -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Recent Users</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ user.name or user.username }}</strong>
+                                            {% if user.is_admin %}
+                                                <span class="badge bg-primary ms-1">Admin</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if user.is_banned %}
+                                                <span class="badge bg-danger">Banned</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if not user.is_admin %}
+                                                <a href="{{ url_for('ban_user', user_id=user.id) }}" 
+                                                   class="btn btn-sm {{ 'btn-outline-success' if user.is_banned else 'btn-outline-danger' }}"
+                                                   onclick="return confirm('Are you sure?')">
+                                                    {{ 'Unban' if user.is_banned else 'Ban' }}
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent users</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Swap Requests -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-handshake me-2"></i>Recent Swap Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_swaps %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Request</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for swap in recent_swaps %}
+                                    <tr>
+                                        <td>
+                                            <small>
+                                                <strong>{{ swap.requester.username }}</strong> →
+                                                <strong>{{ swap.receiver.username }}</strong><br>
+                                                {{ swap.offered_skill.name }} ↔ {{ swap.wanted_skill.name }}
+                                            </small>
+                                        </td>
+                                        <td>{{ swap.created_at.strftime('%m-%d') }}</td>
+                                        <td>
+                                            {% if swap.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif swap.status == 'accepted' %}
+                                                <span class="badge bg-success">Accepted</span>
+                                            {% elif swap.status == 'rejected' %}
+                                                <span class="badge bg-danger">Rejected</span>
+                                            {% elif swap.status == 'completed' %}
+                                                <span class="badge bg-info">Completed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent swap requests</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Skills Moderation -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Skills Requiring Approval</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_skills %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Skill Name</th>
+                                    <th>Category</th>
+                                    <th>Created Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for skill in recent_skills %}
+                                    <tr>
+                                        <td><strong>{{ skill.name }}</strong></td>
+                                        <td>{{ skill.category or 'Uncategorized' }}</td>
+                                        <td>{{ skill.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('approve_skill', skill_id=skill.id) }}" 
+                                                   class="btn btn-success btn-sm">
+                                                    <i class="fas fa-check me-1"></i>Approve
+                                                </a>
+                                                <a href="{{ url_for('delete_skill', skill_id=skill.id) }}" 
+                                                   class="btn btn-danger btn-sm"
+                                                   onclick="return confirm('Are you sure you want to delete this skill?')">
+                                                    <i class="fas fa-trash me-1"></i>Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No skills requiring approval</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Platform Message -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Send Platform-wide Message</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin_dashboard') }}">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="message_title" class="form-label">Message Title</label>
+                                <input type="text" class="form-control" id="message_title" name="message_title" 
+                                       placeholder="e.g., Platform Update">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="message_content" class="form-label">Message Content</label>
+                                <textarea class="form-control" id="message_content" name="message_content" rows="3"
+                                          placeholder="Enter your message to all users..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-send me-1"></i>Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

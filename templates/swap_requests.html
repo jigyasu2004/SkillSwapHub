@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}Swap Requests - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-handshake me-2"></i>Swap Requests</h1>
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Filter by status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Requests</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Accepted</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tab Navigation -->
+<ul class="nav nav-tabs mb-4" id="requestTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" 
+                type="button" role="tab">
+            <i class="fas fa-inbox me-1"></i>Received Requests
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent" 
+                type="button" role="tab">
+            <i class="fas fa-paper-plane me-1"></i>Sent Requests
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="requestTabsContent">
+    <!-- Received Requests Tab -->
+    <div class="tab-pane fade show active" id="received" role="tabpanel">
+        {% if received_requests.items %}
+            {% for request in received_requests.items %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                {% if request.requester.profile_photo %}
+                                    <img src="{{ request.requester.profile_photo }}" 
+                                         alt="{{ request.requester.name or request.requester.username }}" 
+                                         class="rounded-circle" width="60" height="60">
+                                {% else %}
+                                    <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-user fa-2x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <strong>{{ request.requester.name or request.requester.username }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Skill Exchange:</strong>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <span class="badge bg-success me-2">{{ request.offered_skill.name }}</span>
+                                        <i class="fas fa-exchange-alt text-muted mx-2"></i>
+                                        <span class="badge bg-primary">{{ request.wanted_skill.name }}</span>
+                                    </div>
+                                </div>
+                                
+                                {% if request.message %}
+                                    <div class="mb-2">
+                                        <strong>Message:</strong>
+                                        <p class="mb-0 text-muted">{{ request.message }}</p>
+                                    </div>
+                                {% endif %}
+                                
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </div>
+                            
+                            <div class="col-md-2 text-center">
+                                {% if request.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif request.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepted</span>
+                                {% elif request.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif request.status == 'completed' %}
+                                    <span class="badge bg-info">Completed</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-2">
+                                {% if request.status == 'pending' %}
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('handle_request', request_id=request.id, action='accept') }}" 
+                                           class="btn btn-success btn-sm">
+                                            <i class="fas fa-check me-1"></i>Accept
+                                        </a>
+                                        <a href="{{ url_for('handle_request', request_id=request.id, action='reject') }}" 
+                                           class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </a>
+                                    </div>
+                                {% elif request.status == 'accepted' %}
+                                    <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-star me-1"></i>Rate User
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination for received requests -->
+            {% if received_requests.pages > 1 %}
+                <nav aria-label="Received requests pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if received_requests.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('swap_requests', page=received_requests.prev_num, status=status_filter) }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in received_requests.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != received_requests.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('swap_requests', page=page_num, status=status_filter) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">…</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if received_requests.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('swap_requests', page=received_requests.next_num, status=status_filter) }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">No received requests</h3>
+                <p class="text-muted">When others send you swap requests, they'll appear here.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sent Requests Tab -->
+    <div class="tab-pane fade" id="sent" role="tabpanel">
+        {% if sent_requests %}
+            {% for request in sent_requests %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-2 text-center">
+                                {% if request.receiver.profile_photo %}
+                                    <img src="{{ request.receiver.profile_photo }}" 
+                                         alt="{{ request.receiver.name or request.receiver.username }}" 
+                                         class="rounded-circle" width="60" height="60">
+                                {% else %}
+                                    <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                                         style="width: 60px; height: 60px;">
+                                        <i class="fas fa-user fa-2x text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <strong>{{ request.receiver.name or request.receiver.username }}</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-2">
+                                    <strong>Skill Exchange:</strong>
+                                    <div class="d-flex align-items-center mt-1">
+                                        <span class="badge bg-success me-2">{{ request.offered_skill.name }}</span>
+                                        <i class="fas fa-exchange-alt text-muted mx-2"></i>
+                                        <span class="badge bg-primary">{{ request.wanted_skill.name }}</span>
+                                    </div>
+                                </div>
+                                
+                                {% if request.message %}
+                                    <div class="mb-2">
+                                        <strong>Message:</strong>
+                                        <p class="mb-0 text-muted">{{ request.message }}</p>
+                                    </div>
+                                {% endif %}
+                                
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </div>
+                            
+                            <div class="col-md-2 text-center">
+                                {% if request.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif request.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepted</span>
+                                {% elif request.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif request.status == 'completed' %}
+                                    <span class="badge bg-info">Completed</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-2">
+                                {% if request.status == 'pending' %}
+                                    <a href="{{ url_for('delete_request', request_id=request.id) }}" 
+                                       class="btn btn-outline-danger btn-sm"
+                                       onclick="return confirm('Are you sure you want to delete this request?')">
+                                        <i class="fas fa-trash me-1"></i>Delete
+                                    </a>
+                                {% elif request.status == 'accepted' %}
+                                    <a href="{{ url_for('rate_user', swap_request_id=request.id) }}" 
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-star me-1"></i>Rate User
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">No sent requests</h3>
+                <p class="text-muted">Browse users and send your first swap request!</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>Browse Users
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

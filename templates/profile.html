@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name or user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    {% if user.profile_photo %}
+                        <img src="{{ user.profile_photo }}" alt="{{ user.name or user.username }}" 
+                             class="rounded-circle mb-2" width="120" height="120">
+                    {% else %}
+                        <div class="avatar-placeholder rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" 
+                             style="width: 120px; height: 120px;">
+                            <i class="fas fa-user fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h4>{{ user.name or user.username }}</h4>
+                
+                {% if user.location %}
+                    <p class="text-muted">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ user.location }}
+                    </p>
+                {% endif %}
+                
+                <div class="rating mb-3">
+                    {% set avg_rating = user.get_average_rating() %}
+                    {% if avg_rating > 0 %}
+                        <div class="text-warning fs-5">
+                            {% for i in range(5) %}
+                                {% if i < avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">{{ "%.1f"|format(avg_rating) }}/5 
+                            ({{ user.received_ratings.count() }} reviews)</small>
+                    {% else %}
+                        <small class="text-muted">No ratings yet</small>
+                    {% endif %}
+                </div>
+                
+                {% if user.availability %}
+                    <p class="text-muted">
+                        <i class="fas fa-clock me-1"></i>Available: {{ user.availability }}
+                    </p>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <span class="badge {{ 'bg-success' if user.is_public else 'bg-secondary' }}">
+                        <i class="fas fa-{{ 'eye' if user.is_public else 'eye-slash' }} me-1"></i>
+                        {{ 'Public Profile' if user.is_public else 'Private Profile' }}
+                    </span>
+                </div>
+                
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Skills Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Skills</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Skills Offered</h6>
+                        {% set offered_skills = user.get_offered_skills_list() %}
+                        {% if offered_skills %}
+                            <div class="mb-3">
+                                {% for skill in offered_skills %}
+                                    <span class="badge bg-success-subtle text-success me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No skills offered yet.</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Skills Wanted</h6>
+                        {% set wanted_skills = user.get_wanted_skills_list() %}
+                        {% if wanted_skills %}
+                            <div class="mb-3">
+                                {% for skill in wanted_skills %}
+                                    <span class="badge bg-primary-subtle text-primary me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No skills wanted yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Ratings -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Recent Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% set recent_ratings = user.received_ratings.order_by(user.received_ratings.property.mapper.class_.created_at.desc()).limit(5).all() %}
+                {% if recent_ratings %}
+                    {% for rating in recent_ratings %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>{{ rating.rater.name or rating.rater.username }}</strong>
+                                    <div class="text-warning">
+                                        {% for i in range(rating.rating) %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                        {% for i in range(5 - rating.rating) %}
+                                            <i class="far fa-star"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ rating.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            {% if rating.feedback %}
+                                <p class="mt-2 mb-0">{{ rating.feedback }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    {% if user.received_ratings.count() > 5 %}
+                        <p class="text-center mb-0">
+                            <small class="text-muted">Showing 5 of {{ user.received_ratings.count() }} reviews</small>
+                        </p>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mb-0">No reviews yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

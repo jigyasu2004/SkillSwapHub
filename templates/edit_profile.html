@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - Skill Swap Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-edit me-2"></i>Edit Profile</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ user.name or '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ user.location or '' }}" placeholder="City, Country">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="availability" class="form-label">Availability</label>
+                        <input type="text" class="form-control" id="availability" name="availability" 
+                               value="{{ user.availability or '' }}" placeholder="e.g., Weekends, Evenings">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_public" name="is_public" 
+                                   {{ 'checked' if user.is_public }}>
+                            <label class="form-check-label" for="is_public">
+                                Make my profile public
+                            </label>
+                            <div class="form-text">Public profiles can be found by other users</div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Skills Section -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-success">Skills I Offer</h5>
+                            <div id="offered-skills">
+                                {% for skill in user.get_offered_skills_list() %}
+                                    <div class="skill-item mb-2">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control skill-input" 
+                                                   name="offered_skills" value="{{ skill }}" 
+                                                   placeholder="Enter a skill">
+                                            <button type="button" class="btn btn-outline-danger remove-skill">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                {% if not user.get_offered_skills_list() %}
+                                    <div class="skill-item mb-2">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control skill-input" 
+                                                   name="offered_skills" placeholder="Enter a skill">
+                                            <button type="button" class="btn btn-outline-danger remove-skill">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm" id="add-offered-skill">
+                                <i class="fas fa-plus me-1"></i>Add Skill
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="text-primary">Skills I Want</h5>
+                            <div id="wanted-skills">
+                                {% for skill in user.get_wanted_skills_list() %}
+                                    <div class="skill-item mb-2">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control skill-input" 
+                                                   name="wanted_skills" value="{{ skill }}" 
+                                                   placeholder="Enter a skill">
+                                            <button type="button" class="btn btn-outline-danger remove-skill">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                {% if not user.get_wanted_skills_list() %}
+                                    <div class="skill-item mb-2">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control skill-input" 
+                                                   name="wanted_skills" placeholder="Enter a skill">
+                                            <button type="button" class="btn btn-outline-danger remove-skill">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="add-wanted-skill">
+                                <i class="fas fa-plus me-1"></i>Add Skill
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Skill management functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const allSkills = {{ all_skills | tojson }};
+    
+    // Add autocomplete to skill inputs
+    function addAutocomplete(input) {
+        const datalist = document.createElement('datalist');
+        datalist.id = 'skills-list-' + Math.random().toString(36).substr(2, 9);
+        
+        allSkills.forEach(skill => {
+            const option = document.createElement('option');
+            option.value = skill;
+            datalist.appendChild(option);
+        });
+        
+        input.setAttribute('list', datalist.id);
+        input.parentNode.appendChild(datalist);
+    }
+    
+    // Initialize autocomplete for existing inputs
+    document.querySelectorAll('.skill-input').forEach(addAutocomplete);
+    
+    // Add skill functionality
+    function addSkillHandler(containerId, inputName) {
+        document.getElementById(containerId.replace('#', '') + '-skill').addEventListener('click', function() {
+            const container = document.querySelector(containerId);
+            const skillItem = document.createElement('div');
+            skillItem.className = 'skill-item mb-2';
+            skillItem.innerHTML = `
+                <div class="input-group">
+                    <input type="text" class="form-control skill-input" 
+                           name="${inputName}" placeholder="Enter a skill">
+                    <button type="button" class="btn btn-outline-danger remove-skill">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(skillItem);
+            
+            // Add autocomplete to new input
+            addAutocomplete(skillItem.querySelector('.skill-input'));
+            
+            // Add remove functionality
+            skillItem.querySelector('.remove-skill').addEventListener('click', function() {
+                skillItem.remove();
+            });
+        });
+    }
+    
+    addSkillHandler('#offered-skills', 'offered_skills');
+    addSkillHandler('#wanted-skills', 'wanted_skills');
+    
+    // Remove skill functionality for existing items
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-skill') || e.target.parentNode.classList.contains('remove-skill')) {
+            const skillItem = e.target.closest('.skill-item');
+            const container = skillItem.parentNode;
+            
+            // Don't remove if it's the last item in the container
+            if (container.children.length > 1) {
+                skillItem.remove();
+            } else {
+                // Clear the input instead
+                skillItem.querySelector('input').value = '';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
